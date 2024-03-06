@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "545220662127",
+    "project_id": "city-serve-db40b",
+    "storage_bucket": "city-serve-db40b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545220662127:android:25d016687aed643a2bce9a",
+        "android_client_info": {
+          "package_name": "com.example.city_serve"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBold0b5F_onsDHEcPwSfiZoKU9RFMaEPg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545220662127:android:17484398af10d4002bce9a",
+        "android_client_info": {
+          "package_name": "com.example.cityserve_provider_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBold0b5F_onsDHEcPwSfiZoKU9RFMaEPg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
