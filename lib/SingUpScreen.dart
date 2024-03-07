@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:cityserve_provider_app/providerCategoryForm.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:get/get.dart';
 import 'package:cityserve_provider_app/utils/colors.dart';
@@ -7,6 +8,7 @@ import 'package:cityserve_provider_app/utils/utils.dart';
 import 'package:cityserve_provider_app/widget/text/big_text.dart';
 import 'package:cityserve_provider_app/widget/text/round_button.dart';
 import 'package:cityserve_provider_app/widget/text/small_text.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
@@ -111,7 +113,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
 
 
-      Navigator.push(context, MaterialPageRoute(builder: (context) => NavigationBarr()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryForm()));
       Utils().tostmessage("Sign up successful!");
     } catch (error) {
       Utils().tostmessage("Failed to sign up: $error");
