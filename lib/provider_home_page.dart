@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
+import 'aditProfile.dart';
+
 
 class provider_home_page extends StatefulWidget {
   const provider_home_page({super.key});
@@ -35,7 +37,7 @@ class _provider_home_pageState extends State<provider_home_page> {
             icon: const Icon(Icons.message_outlined),
             color: Colors.white,
             onPressed: () {
-              Get.to(() => const provider_chat_page());
+              Get.to(() => const AditProfile());
             },
           ),
           SizedBox(

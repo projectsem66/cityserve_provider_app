@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 
+import '../bookings.dart';
 import '../btm_controller.dart';
 import '../provider_bookings_page.dart';
 import '../provider_home_page.dart';
@@ -29,7 +30,7 @@ class _NavigationBarrState extends State<NavigationBarr> {
   ];
   final btmNaviScr = [
     provider_home_page(),
-    provider_bookings_page(),
+    Bookings(),
     provider_paymant_page(),
     provider_profile_page(),
 

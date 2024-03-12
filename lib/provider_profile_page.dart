@@ -4,6 +4,7 @@ import 'package:cityserve_provider_app/profile_subpages/About.dart';
 import 'package:cityserve_provider_app/profile_subpages/AppLanguage.dart';
 import 'package:cityserve_provider_app/profile_subpages/AppTheme.dart';
 import 'package:cityserve_provider_app/profile_subpages/ChangePassword.dart';
+import 'package:cityserve_provider_app/providerCategoryForm.dart';
 import 'package:cityserve_provider_app/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -275,7 +276,7 @@ class _provider_profile_pageState extends State<provider_profile_page> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => AppLanguage(),));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryForm(),));
                     },
                     child: Container(
                       height: 50,
@@ -290,7 +291,7 @@ class _provider_profile_pageState extends State<provider_profile_page> {
                             width: 10,
                           ),
                           Text(
-                            "App Language",
+                            "Add Services",
                           ),
                         Spacer(),
                           Icon(

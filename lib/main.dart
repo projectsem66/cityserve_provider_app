@@ -1,10 +1,13 @@
 import 'package:cityserve_provider_app/simple.dart';
 import 'package:cityserve_provider_app/splaseScreen/SplaceScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'dart:io';
 
+import 'AddService.dart';
+import 'aditProfile.dart';
 import 'providerCategoryForm.dart';
 import 'SingUpScreen.dart';
 import 'login_Screen.dart';
@@ -28,14 +31,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
 
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const splashScreen(),
+      home:  splashScreen(),
     );
   }
 }

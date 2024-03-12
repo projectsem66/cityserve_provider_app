@@ -1,5 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:get/get.dart';
+import 'package:cityserve_provider_app/provider_profile_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cityserve_provider_app/simple.dart';
 import 'package:cityserve_provider_app/utils/colors.dart';
@@ -83,12 +85,17 @@ class _CategoryFormState extends State<CategoryForm> {
 
   String aa = "";
   final fireStore = FirebaseFirestore.instance.collection("category").snapshots();
-  String SelectCategory = '0';
-  String SelectSubCategory = '0';
+  String? SelectCategory;
+  String? SelectSubCategory;
+  String? SelectSubCategoryPanels;
 Stream<QuerySnapshot<Map<String, dynamic>>> getCategoryDocumentName(String docName){
   print("Calledddddd");
       return FirebaseFirestore.instance.collection("category").doc(docName).collection("subcategories").snapshots();
     }
+  Stream<QuerySnapshot<Map<String, dynamic>>> getPanelDocumentName(String docNamee, String selectSubCategory){
+    return FirebaseFirestore.instance.collection("category").doc(docNamee).collection("subcategories").doc(selectSubCategory).collection("subCategoriesPanels").snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,130 +236,178 @@ Stream<QuerySnapshot<Map<String, dynamic>>> getCategoryDocumentName(String docNa
                   ),
                 ),
                 const SizedBox(height: 20,),
+                // Category dropdown
                 StreamBuilder<QuerySnapshot>(
-                  stream: fireStore,
-                  builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot) {
-                    List<DropdownMenuItem> providerCategory = [];
-                    if(!snapshot.hasData){
-                      const CircularProgressIndicator();
-                    }else{
-                      final categorys = snapshot.data?.docs.reversed.toList();
-                      providerCategory.add(DropdownMenuItem(
-                        value: '0',
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 165.0),
-                            child: SmallText(text: "Select Category",),
-                          ),
-
-                      )
-                      );
-                      for(var category in categorys!){
-                        providerCategory.add(DropdownMenuItem(
-                            value: category.id,
-                          child: SmallText(text: category['cname'],color: AppColors.themColor,),
-                        ));
-                      }
+                  stream: FirebaseFirestore.instance.collection("category").snapshots(),
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
                     }
-                    return Column(
-                      children: [
-                        Container(
-                          height: 40,
-                          width: 400,
-                          decoration: BoxDecoration(
-                              color: AppColors.themColor.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(7),
-                          border: Border.all(color: AppColors.themColor)),
-                          child: DropdownButton(
-                            enableFeedback: true,
-                             underline: Container(
-                               color: Colors.blue,
-                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
 
-                            items: providerCategory,
-                              onChanged: (categoryValue) {
-                              print("Category : $categoryValue");
-                                getCategoryDocumentName(categoryValue);
-                            setState(() {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
 
-                              SelectCategory = categoryValue;
-                              aa = categoryValue;
-                            });
-                            print(categoryValue);
-
-                              },
-                            value: SelectCategory,
-                          isExpanded: false,),
+                    List<DropdownMenuItem<String>> categoryItems = [
+                      DropdownMenuItem<String>(
+                        value: null,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 180.0,left: 10),
+                          child: SmallText(text: "Select Category"),
                         ),
-                      ],
+                      ),
+                    ];
+
+                    snapshot.data!.docs.forEach((doc) {
+                      categoryItems.add(DropdownMenuItem<String>(
+                        value: doc.id,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: SmallText(text:doc['cname']),
+                        ),
+                      ));
+                    });
+
+                    return Container(
+                      height: 50,
+                      width: 400,
+                      decoration: BoxDecoration(
+                          color: AppColors.themColor.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(7),
+                          border: Border.all(color: AppColors.themColor)),
+                      child: DropdownButton<String>(
+                        value: SelectCategory,
+                        items: categoryItems,
+                        underline: Container(
+                          color: Colors.blue,
+                        ),
+                        onChanged: (String? value) {
+                          setState(() {
+                            SelectCategory = value;
+                            SelectSubCategory = null;
+                            SelectSubCategoryPanels = null;
+                          });
+                        },
+                      ),
                     );
                   },
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-          // second dropdownmenu
-                if(aa.isNotEmpty)
-                StreamBuilder<QuerySnapshot>(
-                  stream: getCategoryDocumentName(aa),
-                  builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot) {
-                    List<DropdownMenuItem> providerCategory = [];
-                    if(!snapshot.hasData){
-                      const CircularProgressIndicator();
-                    }else{
-                      final subcategorys = snapshot.data?.docs.reversed.toList();
-                      print("Categotrieeees : ${snapshot.data?.docs.reversed.toList()}");
-                      providerCategory.add(DropdownMenuItem(
-                        value: '0',
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 135.0),
-                          child: SmallText(text: "Select SubCategory",),
-                        ),
-
-                      )
-                      );
-                      for(var subcategory in subcategorys!){
-                        print("Category ID : ${subcategory.id}");
-                        providerCategory.add(DropdownMenuItem(
-                          value: subcategory['scname'],
-
-                          child: SmallText(text: subcategory['scname'],color: AppColors.themColor,),
-                        ));
+                SizedBox(height: 20),
+                // Subcategory dropdown
+                if (SelectCategory != null)
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection("category").doc(SelectCategory).collection("subcategories").snapshots(),
+                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
                       }
-                      print("Provider Category : ${providerCategory[1].value}");
-                      providerCategory = providerCategory.toSet().toList();
 
-                    }
-                    if(providerCategory.isNotEmpty) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+
+                      List<DropdownMenuItem<String>> subcategoryItems = [
+                        DropdownMenuItem<String>(
+                          value: null,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10.0,right: 155),
+                            child: SmallText(text: "Select Subcategory"),
+                          ),
+                        ),
+                      ];
+
+                      snapshot.data!.docs.forEach((doc) {
+                        subcategoryItems.add(DropdownMenuItem<String>(
+                          value: doc.id,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: SmallText(text:doc['scname']),
+                          ),
+                        ));
+                      });
+
                       return Container(
-                        height: 40,
+                        height: 50,
                         width: 400,
                         decoration: BoxDecoration(
                             color: AppColors.themColor.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(7),
                             border: Border.all(color: AppColors.themColor)),
-                        child: DropdownButton(
-                          enableFeedback: true,
+                        child: DropdownButton<String>(
+                          value: SelectSubCategory,
+                          items: subcategoryItems,
                           underline: Container(
                             color: Colors.blue,
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-
-                          items: providerCategory,
-                          onChanged: (subCategoryValue) {
+                          onChanged: (String? value) {
                             setState(() {
-                              SelectSubCategory = subCategoryValue;
+                              SelectSubCategory = value;
+                              SelectSubCategoryPanels = null;
                             });
-                            print(subCategoryValue);
                           },
-                          value: SelectSubCategory,
-                          isExpanded: false,),
+                        ),
                       );
-                    } return  SizedBox();
-                  },
-                ),
+                    },
+                  ),
+                SizedBox(height: 20),
+                // Subcategory panel dropdown
+                if (SelectSubCategory != null)
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection("category").doc(SelectCategory).collection("subcategories").doc(SelectSubCategory).collection("sections").snapshots(),
+                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+
+                      List<DropdownMenuItem<String>> panelItems = [
+                        DropdownMenuItem<String>(
+                          value: null,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 108.0,left: 10),
+                            child: SmallText(text: "Select Subcategory Panel",),
+                          ),
+                        ),
+                      ];
+
+                      snapshot.data!.docs.forEach((doc) {
+                        panelItems.add(DropdownMenuItem<String>(
+                          value: doc.id,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10.0),
+                            child: SmallText(text:doc['sname']),
+                          ),
+                        ));
+                      });
+
+                      return Container(
+                        height: 50,
+                        width: 400,
+                        decoration: BoxDecoration(
+                            color: AppColors.themColor.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(color: AppColors.themColor)),
+                        child: DropdownButton<String>(
+                          value: SelectSubCategoryPanels,
+                          underline: Container(
+                            color: Colors.blue,
+                          ),
+                          items: panelItems,
+                          onChanged: (String? value) {
+                            setState(() {
+                              SelectSubCategoryPanels = value;
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+
                 SizedBox(height:
-                  dimensions.height20,),
+                dimensions.height20,),
                 Container(
                   decoration: BoxDecoration(
                       color: AppColors.themColor.withOpacity(0.05),
@@ -443,50 +498,50 @@ Stream<QuerySnapshot<Map<String, dynamic>>> getCategoryDocumentName(String docNa
                   height: dimensions.height20,
                 ),
                 //Service Rating
-                Container(
-                  decoration: BoxDecoration(
-                      color: AppColors.themColor.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(7)),
-                  child: TextFormField(
-                    cursorColor: Colors.black,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color:AppColors.themColor,
-                    ),
-                    controller:sRatingController,
-                    keyboardType: TextInputType.text,
-
-                    // obscureText: true,
-                    decoration:  InputDecoration(
-                      // suffixIcon: const Icon(Icons.person_outline,
-                      //   color: AppColors.themColor,),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      labelText: " Add Service Rating",
-                      labelStyle: const TextStyle(
-                          color: AppColors.themColor
-                      ),
-                      contentPadding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: AppColors.themColor),
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.transparent),
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-
-                    ),
-                    validator: (value){
-                      if(value!.isEmpty){
-                        return 'Enter ServiceRating';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                SizedBox(
-                  height: dimensions.height20,
-                ),
+                // Container(
+                //   decoration: BoxDecoration(
+                //       color: AppColors.themColor.withOpacity(0.05),
+                //       borderRadius: BorderRadius.circular(7)),
+                //   child: TextFormField(
+                //     cursorColor: Colors.black,
+                //     style: const TextStyle(
+                //       fontSize: 18,
+                //       color:AppColors.themColor,
+                //     ),
+                //     controller:sRatingController,
+                //     keyboardType: TextInputType.text,
+                //
+                //     // obscureText: true,
+                //     decoration:  InputDecoration(
+                //       // suffixIcon: const Icon(Icons.person_outline,
+                //       //   color: AppColors.themColor,),
+                //       floatingLabelBehavior: FloatingLabelBehavior.always,
+                //       labelText: " Add Service Rating",
+                //       labelStyle: const TextStyle(
+                //           color: AppColors.themColor
+                //       ),
+                //       contentPadding: const EdgeInsets.fromLTRB(5, 10, 5, 0),
+                //       focusedBorder: OutlineInputBorder(
+                //         borderSide: const BorderSide(color: AppColors.themColor),
+                //         borderRadius: BorderRadius.circular(5.0),
+                //       ),
+                //       enabledBorder: OutlineInputBorder(
+                //         borderSide: const BorderSide(color: Colors.transparent),
+                //         borderRadius: BorderRadius.circular(5.0),
+                //       ),
+                //
+                //     ),
+                //     validator: (value){
+                //       if(value!.isEmpty){
+                //         return 'Enter ServiceRating';
+                //       }
+                //       return null;
+                //     },
+                //   ),
+                // ),
+                // SizedBox(
+                //   height: dimensions.height20,
+                // ),
            //Service Price
                 Container(
                   decoration: BoxDecoration(
@@ -499,7 +554,7 @@ Stream<QuerySnapshot<Map<String, dynamic>>> getCategoryDocumentName(String docNa
                       color:AppColors.themColor,
                     ),
                     controller:sPriceController,
-                    keyboardType: TextInputType.text,
+                    keyboardType: TextInputType.number,
 
                     // obscureText: true,
                     decoration:  InputDecoration(
@@ -564,58 +619,67 @@ Stream<QuerySnapshot<Map<String, dynamic>>> getCategoryDocumentName(String docNa
     }
 
     try {
-      // Fetch the current user's userId
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         throw Exception('User not logged in');
       }
       final String providerId = currentUser.uid;
+      DocumentSnapshot userData = await FirebaseFirestore.instance
+          .collection('providerDetails')
+          .doc(providerId)
+          .get();
+      if (userData.exists) {
 
-      // Get the current auto-incremental value
-      final incrementDoc = await FirebaseFirestore.instance.collection("autoIncrement").doc('increment').get();
-      int currentIncrement = incrementDoc.exists ? incrementDoc['value'] as int : 0;
+          final String firstName = userData['firstName']; // Corrected variable name
+          final String lastName = userData['lastName'];
+          final String email = userData['email'];
+          final String phone = userData['phoneNumber'];
+          final String profileImageUrl = userData['image'];
 
-      // Use the current value as the document ID
-      final docId = (currentIncrement + 1).toString();
-      await uploadData(docId).then((value) async {
-        if (value != null) {
-          // Add the service to Firestore with providerId
-          fireStoreAddService.doc(docId).set({
-            'providerId': providerId,
-            'category': SelectCategory,
-            'subcategory': SelectSubCategory,
-            'serviceName': sNmaeController.text,
-            'serviceDescription': sDiscriptionController.text,
-            'servicePrice': sPriceController.text,
-            'serviceDuration': sDurationController.text,
-            'serviceRating': sRatingController.text,
-            'images': value,
-          }).then((_) {
-            // Data set successfully
-            print('User data added to Firestore');
-          }).catchError((error) {
-            // Error handling
-            Utils().tostmessage(error.toString());
+          final incrementDoc = await FirebaseFirestore.instance.collection("autoIncrement").doc('increment').get();
+          int currentIncrement = incrementDoc.exists ? incrementDoc['value'] as int : 0;
+
+          final docId = (currentIncrement + 1).toString();
+          await uploadData(docId).then((value) async {
+            if (value != null) {
+              await fireStoreAddService.doc(docId).set({
+                'providerId': providerId,
+                'providerImage': profileImageUrl, // Use profileImageUrl from providerDetails
+                'providerName': '$firstName $lastName', // Combine first and last names
+                'providerEmail': email,
+                'providerPhoneNumber': phone,
+                'category': SelectCategory,
+                'subcategory': SelectSubCategory,
+                'subcategorypanel': SelectSubCategoryPanels,
+                'serviceName': sNmaeController.text,
+                'serviceDescription': sDiscriptionController.text,
+                'servicePrice': sPriceController.text,
+                'serviceDuration': sDurationController.text,
+                'serviceRating': '0',
+                'images': value,
+              }).then((_) {
+                print('User data added to Firestore');
+              }).catchError((error) {
+                Utils().tostmessage(error.toString());
+              });
+              await FirebaseFirestore.instance.collection("autoIncrement").doc('increment').set({
+                'value': currentIncrement + 1,
+              });
+              Get.to(() => const provider_profile_page());
+              // Clear form fields after adding service
+              // setState(() {
+              //   SelectCategory = '0';
+              //   SelectSubCategory = '0';
+              //   sNmaeController.clear();
+              //   sDiscriptionController.clear();
+              //   sPriceController.clear();
+              //   sDurationController.clear();
+              //   sRatingController.clear();
+              //   pickedImage = null;
+              // });
+            }
           });
-         // Update the auto-incremental value
-          await FirebaseFirestore.instance.collection("autoIncrement").doc('increment').set({
-            'value': currentIncrement + 1,
-          });
-
-
-          // Clear form fields after adding service
-          setState(() {
-            SelectCategory = '0';
-            SelectSubCategory = '0';
-            sNmaeController.clear();
-            sDiscriptionController.clear();
-            sPriceController.clear();
-            sDurationController.clear();
-            sRatingController.clear();
-            pickedImage = null;
-          });
-        }
-      });
+      }
     } catch (error) {
       // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -623,6 +687,7 @@ Stream<QuerySnapshot<Map<String, dynamic>>> getCategoryDocumentName(String docNa
       );
     }
   }
+
 
 
   pickImage(ImageSource imageSource) async {
